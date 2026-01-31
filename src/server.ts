@@ -50,7 +50,28 @@ app.get('/', (req: Request, res: Response) => {
 	res.send('Hello Next world');
 });
 
-app.post('/', (req: Request, res: Response) => {
+app.post('/users', async (req: Request, res: Response) => {
+	const { name, email } = req.body;
+
+	// Query will be successful and fail --so add try_catch
+	try {
+		// first write query
+		// Value()  is not sql injection proof ---so we need to send as parametized
+		const result = await pool.query(`INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`, [name, email]);
+		// console.log(result.rows[0]);
+
+		res.status(201).json({
+			success: false,
+			message: 'Data Inserted Successfully',
+			data: result.rows[0],
+		});
+	} catch (error: any) {
+		res.status(500).json({
+			success: false,
+			message: error?.message,
+		});
+	}
+
 	console.log(req.body);
 	res.status(201).json({
 		success: true,
